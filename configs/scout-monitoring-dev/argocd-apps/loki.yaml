@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana-loki
+  namespace: argocd
+spec:
+  project: scout-monitoring-dev
+  sources:
+    - repoURL: https://grafana.github.io/helm-charts
+      chart: loki
+      targetRevision: 5.6.2
+      helm:
+        releaseName: loki
+        valueFiles:
+        - $values/configs/scout-monitoring-dev/loki/helm/helm-values.yaml
+    - repoURL: 'https://dev.azure.com/SorocoProducts/Scout/_git/MonitoringPlatformGitOps'
+      targetRevision: develop
+      ref: values
+    # - repoURL: 'https://dev.azure.com/SorocoProducts/Scout/_git/MonitoringPlatformGitOps'
+    #   targetRevision: develop
+    #   path: configs/scout-obs-dev1/loki/manifests/
+  destination:
+    namespace: loki
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated: {}
+    syncOptions:
+      - CreateNamespace=true

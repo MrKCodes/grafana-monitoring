@@ -1,0 +1,19 @@
+apiVersion: monitoring.grafana.com/v1alpha1
+kind: Integration
+metadata:
+  labels:
+    agent: grafana-agent-scout
+  name: grafana-agent-statsd-exporter
+  namespace: grafana-agent
+spec:
+  name: statsd
+  type:
+    allNodes: false
+    unique: true
+  config:
+    autoscrape:
+      enable: true
+      metrics_instance: grafana-agent/grafana-agent-scout-metrics
+    listen_udp: ":9125"
+    listen_tcp: ":9126"
+    parse_dogstatsd_tags: true

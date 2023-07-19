@@ -1,0 +1,31 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: grafanadatasource-victoriametrics
+spec:
+  allowCrossNamespaceImport: true
+  valuesFrom:
+    - targetPath: "user"
+      valueFrom:
+        secretKeyRef:
+          name: "datasource-vm-system-read-credentials"
+          key: "VM_USERNAME"
+    - targetPath: "secureJsonData.password"
+      valueFrom:
+        secretKeyRef:
+          name: "datasource-vm-system-read-credentials"
+          key: "VM_PASSWORD"
+  instanceSelector:
+    matchLabels:
+      dashboards: "grafana"
+  datasource:
+    access: proxy
+    isDefault: false
+    name: victoriametrics-system
+    type: prometheus
+    basicAuth: true
+    url: http://vmselect-vm-system.vm-system.svc:8481/select/0/prometheus
+    basicAuthUser: ${VM_USERNAME}
+    secureJsonData:
+      "basicAuthPassword": ${VM_PASSWORD}
+    editable: false

@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana-agent
+  namespace: argocd
+spec:
+  project: grafana-cluster
+  source:
+    repoURL: 'https://dev.azure.com/SorocoProducts/Scout/_git/MonitoringPlatformGitOps'
+    targetRevision: develop
+    path: configs/grafana-cluster/grafana-agent
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: grafana-agent
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

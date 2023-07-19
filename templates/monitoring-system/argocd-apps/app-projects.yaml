@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: operators
+  namespace: argocd
+spec:
+  description: Project for managing operators
+  sourceRepos:
+    - '*'
+  destinations:
+    - namespace: grafana-ui
+      server: 'https://kubernetes.default.svc'
+    - namespace: grafana-agent
+      server: 'https://kubernetes.default.svc'
+    - namespace: vm-operator
+      server: 'https://kubernetes.default.svc'
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: monitoring-system
+  namespace: argocd
+spec:
+  description: Project for managing the monitoring system
+  sourceRepos:
+    - '*'
+  destinations:
+    - namespace: grafana-ui
+      server: 'https://kubernetes.default.svc'
+    - namespace: grafana-agent
+      server: 'https://kubernetes.default.svc'
+    - namespace: vm-system
+      server: 'https://kubernetes.default.svc'
+    - namespace: vm-scout
+      server: 'https://kubernetes.default.svc'
+    - namespace: loki
+      server: 'https://kubernetes.default.svc'
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'

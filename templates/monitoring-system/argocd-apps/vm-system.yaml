@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vm-system
+  namespace: argocd
+spec:
+  project: monitoring-system
+  source:
+    repoURL: 'https://dev.azure.com/SorocoProducts/Scout/_git/MonitoringPlatformGitOps'
+    targetRevision: develop
+    path: configs/monitoring-system/vm-system
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: vm-system
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

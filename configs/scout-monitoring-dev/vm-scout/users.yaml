@@ -1,0 +1,37 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMUser
+metadata:
+  name: datasource-vm-scout-read
+spec:
+  passwordRef:
+    name: datasource-vm-scout-read-credentials
+    key: VM_PASSWORD
+  username: vm_scout_read_user
+  targetRefs:
+    - crd:
+        kind: VMCluster/vmselect
+        name: vm-scout
+        namespace: vm-scout
+      paths: ["/.*"]
+    - static:
+        url: http://vmalert-vm-system-alert.vm-scout.svc:8080
+      paths: ["/api/v1/groups","/api/v1/alerts"]
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMUser
+metadata:
+  name: vm-scout-push
+spec:
+  passwordRef:
+    name: vm-scout-push-credentials
+    key: VM_PASSWORD
+  username: vm_scout_push_user
+  targetRefs:
+    - crd:
+        kind: VMCluster/vmselect
+        name: vm-scout
+        namespace: vm-scout
+      paths: ["/.*"]
+    - static:
+        url: http://vmalert-vm-system-alert.vm-scout.svc:8080
+      paths: ["/api/v1/groups","/api/v1/alerts"]

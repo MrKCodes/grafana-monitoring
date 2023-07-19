@@ -1,0 +1,156 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMCluster
+metadata:
+  name: vm-system
+  labels:
+    app.kubernetes.io/instance: vm-system
+spec:
+  retentionPeriod: "60"
+  replicationFactor: 1
+  vmstorage:
+    resources:
+      limits:
+        cpu: "0.2"
+        memory: 500Mi
+      requests:
+        cpu: "0.1"
+        memory: '200Mi'
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: default
+          resources:
+            requests:
+              storage: 16Gi
+    logLevel: INFO
+    replicaCount: 1
+    storageDataPath: "/vm-data"
+  vmselect:
+    logLevel: INFO
+    extraArgs:
+      "vmalert.proxyURL": "http://vmalert-vm-system-alert.vm-system.svc:8080"
+    replicaCount: 1
+    cacheMountPath: "/select-cache"
+    resources:
+      limits:
+        cpu: "0.2"
+        memory: 500Mi
+      requests:
+        cpu: "0.1"
+        memory: '200Mi'
+    storage:
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: 2Gi
+  vminsert:
+    logLevel: INFO
+    replicaCount: 1
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMAuth
+metadata:
+  name: vm-system
+  labels:
+    app.kubernetes.io/instance: vm-system
+spec:
+  replicaCount: 1
+  logLevel: INFO
+  port: "80"
+  selectAllByDefault: true
+  serviceSpec:
+    metadata:
+      name: vmauth-public
+      annotations:
+        service.beta.kubernetes.io/azure-dns-label-name: scout-demo-vms
+    spec:
+      type: LoadBalancer
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMAlertmanagerConfig
+metadata:
+  name: vm-system-alertmanagerconfig
+  labels:
+    app.kubernetes.io/instance: vm-system
+spec:
+  inhibit_rules: []
+  route:
+    routes:
+      - receiver: webhook
+        continue: true
+    receiver: email
+    group_by: []
+    continue: false
+    matchers:
+      - job = "alertmanager"
+    group_wait: 30s
+    group_interval: 45s
+    repeat_interval: 1h
+  mute_time_intervals:
+    - name: base
+      time_intervals:
+        - times:
+            - start_time: ""
+              end_time: ""
+          weekdays: []
+          days_of_month: []
+          months: []
+          years: []
+
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMAlert
+metadata:
+  name: vm-system-alert
+  labels:
+    app.kubernetes.io/instance: vm-system
+spec:
+  replicaCount: 1
+  datasource:
+    basicAuth:
+      password:
+        key: VM_PASSWORD
+        name: datasource-vm-system-read-credentials
+      username:
+        key: VM_USERNAME
+        name: datasource-vm-system-read-credentials
+    url: "http://vmselect-vm-system.vm-system.svc:8481/select/0/prometheus"
+  remoteWrite:
+    basicAuth:
+      password:
+        key: VM_PASSWORD
+        name: vm-system-push-credentials
+      username:
+        key: VM_USERNAME
+        name: vm-system-push-credentials
+    url: "http://vminsert-vm-system.vm-system.svc:8480/insert/0/prometheus"
+  remoteRead:
+    basicAuth:
+      password:
+        key: VM_PASSWORD
+        name: datasource-vm-system-read-credentials
+      username:
+        key: VM_USERNAME
+        name: datasource-vm-system-read-credentials
+    url: "http://vmselect-vm-system.vm-system.svc:8481/select/0/prometheus"
+  notifier:
+    url: "http://vmalertmanager-vm-system-alertmanager.vm-system.svc:9093"
+  evaluationInterval: "20s"
+  selectAllByDefault: true
+
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMAlertmanager
+metadata:
+  name: vm-system-alertmanager
+  labels:
+    app.kubernetes.io/instance: vm-system
+spec:
+  # Add fields here
+  replicaCount: 1
+  configSelector:
+    matchLabels:
+      name: vm-system-alertmanagerconfig
+  selectAllByDefault: true
+

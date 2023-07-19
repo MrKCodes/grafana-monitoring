@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vm-scout
+  namespace: argocd
+spec:
+  project: scout-demo
+  source:
+    repoURL: 'https://dev.azure.com/SorocoProducts/Scout/_git/MonitoringPlatformGitOps'
+    targetRevision: develop
+    path: configs/scout-demo/vm-scout
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: vm-scout
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

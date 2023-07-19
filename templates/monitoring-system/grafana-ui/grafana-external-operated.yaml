@@ -1,0 +1,17 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: Grafana
+metadata:
+  annotations:
+  labels:
+    app: grafana
+    dashboards: "grafana"
+  name: grafana-external
+spec:
+  external:
+    url: "http://grafana.grafana-ui.svc:3000"
+    adminUser:
+      name: credentials-grafana
+      key: admin_username
+    adminPassword:
+      name: credentials-grafana
+      key: admin_password
